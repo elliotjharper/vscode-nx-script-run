@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { runCommandLineScript } from './run-command-line-script';
+import { readObjectFromCommandOutput } from './read-nx-json-output';
 
 export interface IProjectConfiguration {
     name: string;
@@ -13,7 +14,7 @@ export async function readNxProjectTargets(project: string): Promise<string[]> {
 
     const projectConfigJson = await runCommandLineScript(`nx show project ${project}`);
 
-    const projectConfig = JSON.parse(projectConfigJson) as IProjectConfiguration;
+    const projectConfig = readObjectFromCommandOutput<IProjectConfiguration>(projectConfigJson);
 
     const targets = Object.keys(projectConfig.targets);
 

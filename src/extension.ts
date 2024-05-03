@@ -23,9 +23,9 @@ export function activate(context: vscode.ExtensionContext) {
             const selectedNxProject = await vscode.window.showQuickPick(nxProjects);
 
             if (!selectedNxProject) {
-                vscode.window.showInformationMessage(
-                    'You did not select an nx project. Exiting...'
-                );
+                // vscode.window.showInformationMessage(
+                //     'You did not select an nx project. Exiting...'
+                // );
                 return;
             }
 
@@ -34,9 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
             const selectedTarget = await vscode.window.showQuickPick(nxProjectTargets);
 
             if (!selectedTarget) {
-                vscode.window.showInformationMessage(
-                    'You did not select an nx project target. Exiting...'
-                );
+                // vscode.window.showInformationMessage(
+                //     'You did not select an nx project target. Exiting...'
+                // );
                 return;
             }
 
