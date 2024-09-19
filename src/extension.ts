@@ -12,15 +12,15 @@ export function activate(context: vscode.ExtensionContext) {
              * step 2: read the targets for that project and allow picking
              */
 
-            let nxProjects: string[];
+            let selectedNxProject: string | undefined;
             try {
-                nxProjects = await readNxProjects();
+                selectedNxProject = await vscode.window.showQuickPick(readNxProjects(), {
+                    placeHolder: 'Reading nx projects...',
+                });
             } catch (err) {
                 vscode.window.showInformationMessage(`Failed to read nx projects. ${err}`);
                 return;
             }
-
-            const selectedNxProject = await vscode.window.showQuickPick(nxProjects);
 
             if (!selectedNxProject) {
                 // vscode.window.showInformationMessage(
@@ -29,9 +29,10 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
 
-            const nxProjectTargets = await readNxProjectTargets(selectedNxProject);
-
-            const selectedTarget = await vscode.window.showQuickPick(nxProjectTargets);
+            const selectedTarget = await vscode.window.showQuickPick(
+                readNxProjectTargets(selectedNxProject),
+                { placeHolder: `Reading targets for ${selectedNxProject}...` }
+            );
 
             if (!selectedTarget) {
                 // vscode.window.showInformationMessage(

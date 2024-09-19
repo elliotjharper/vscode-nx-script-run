@@ -10,7 +10,7 @@ export interface IProjectConfiguration {
 }
 
 export async function readNxProjectTargets(project: string): Promise<string[]> {
-    vscode.window.showInformationMessage(`Reading targets for ${project}`);
+    // vscode.window.showInformationMessage(`Reading targets for ${project}`);
 
     const projectConfigJson = await runCommandLineScript(`nx show project ${project}`);
 

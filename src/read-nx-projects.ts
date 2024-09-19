@@ -3,7 +3,7 @@ import { runCommandLineScript } from './run-command-line-script';
 import { readProjectsCommandOutput } from './read-nx-json-output';
 
 export async function readNxProjects(): Promise<string[]> {
-    vscode.window.showInformationMessage(`Reading projects`);
+    // vscode.window.showInformationMessage(`Reading projects`);
 
     const showProjectsCommand = 'nx show projects --json';
     try {
