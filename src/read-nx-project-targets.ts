@@ -1,6 +1,5 @@
-import * as vscode from 'vscode';
-import { runCommandLineScript } from './run-command-line-script';
 import { readObjectFromCommandOutput } from './read-nx-json-output';
+import { runCommandLineScript } from './run-command-line-script';
 
 export interface IProjectConfiguration {
     name: string;
@@ -9,10 +8,10 @@ export interface IProjectConfiguration {
     configurations: Map<string, object>;
 }
 
-export async function readNxProjectTargets(project: string): Promise<string[]> {
+export async function readNxProjectTargets(nxRootDir: string, project: string): Promise<string[]> {
     // vscode.window.showInformationMessage(`Reading targets for ${project}`);
 
-    const projectConfigJson = await runCommandLineScript(`nx show project ${project}`);
+    const projectConfigJson = await runCommandLineScript(`nx show project ${project}`, nxRootDir);
 
     const projectConfig = readObjectFromCommandOutput<IProjectConfiguration>(projectConfigJson);
 

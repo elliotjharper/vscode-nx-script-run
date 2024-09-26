@@ -1,11 +1,49 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { readNxProjectTargets } from './read-nx-project-targets';
 import { readNxProjects } from './read-nx-projects';
+import { getWorkspacePath } from './run-command-line-script';
+
+/**
+ * Recursive function that returns dir that contains a matching file.
+ * Searches given dir and if a match is not found it moves up a folder until it either finds a match or has reached the root of the drive.
+ */
+export function findDirThatContainsFile(dir: string, file: string): string {
+    const filePath = path.join(dir, file);
+
+    if (fs.existsSync(filePath)) {
+        return dir;
+    }
+
+    const parentDir = path.dirname(dir);
+
+    if (parentDir === dir) {
+        throw new Error(
+            'There was no parent dir available. Must have reached the root of the drive.'
+        );
+    }
+
+    return findDirThatContainsFile(parentDir, file);
+}
+
+export async function findNxRootDir(): Promise<string> {
+    const nxFileName = 'nx.json';
+    const workspaceRootNxResult = await vscode.workspace.findFiles(`/${nxFileName}`, null, 1);
+    const workspaceRootPath = getWorkspacePath();
+    if (workspaceRootNxResult.length >= 1) {
+        return workspaceRootPath;
+    }
+
+    return findDirThatContainsFile(workspaceRootPath, nxFileName);
+}
 
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand(
         'elltg-nx-script-run.runNxScript',
         async () => {
+            const nxRootDir = await findNxRootDir();
+
             /**
              * step 1: read the projects and allow picking of a project
              *
@@ -14,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             let selectedNxProject: string | undefined;
             try {
-                selectedNxProject = await vscode.window.showQuickPick(readNxProjects(), {
+                selectedNxProject = await vscode.window.showQuickPick(readNxProjects(nxRootDir), {
                     placeHolder: 'Reading nx projects...',
                 });
             } catch (err) {
@@ -30,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             const selectedTarget = await vscode.window.showQuickPick(
-                readNxProjectTargets(selectedNxProject),
+                readNxProjectTargets(nxRootDir, selectedNxProject),
                 { placeHolder: `Reading targets for ${selectedNxProject}...` }
             );
 
@@ -44,6 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
             const activeTerminal = vscode.window.activeTerminal;
             if (activeTerminal) {
                 activeTerminal.show();
+                activeTerminal.sendText(`cd "${nxRootDir}"`);
                 activeTerminal.sendText(`nx run ${selectedNxProject}:${selectedTarget}`);
             } else {
                 vscode.window.showInformationMessage('No active terminal. Exiting...');
