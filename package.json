@@ -4,7 +4,7 @@
     "description": "Run NX scripts from the command palette",
     "icon": "images/logo-nx-run-128.png",
     "publisher": "elltg",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "repository": {
         "type": "git",
         "url": "https://github.com/elliotjharper/vscode-nx-script-run.git"

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { readNxProjectTargets } from './read-nx-project-targets';
-import { readNxProjects } from './read-nx-projects';
+import { NxProject, readNxProjects } from './read-nx-projects';
 import { getWorkspacePath } from './run-command-line-script';
 
 /**
@@ -50,32 +50,32 @@ export function activate(context: vscode.ExtensionContext) {
              * step 2: read the targets for that project and allow picking
              */
 
-            let selectedNxProject: string | undefined;
+            let projects: NxProject[];
             try {
-                selectedNxProject = await vscode.window.showQuickPick(readNxProjects(nxRootDir), {
-                    placeHolder: 'Reading nx projects...',
-                });
+                projects = await readNxProjects(nxRootDir);
             } catch (err) {
                 vscode.window.showInformationMessage(`Failed to read nx projects. ${err}`);
                 return;
             }
 
-            if (!selectedNxProject) {
-                // vscode.window.showInformationMessage(
-                //     'You did not select an nx project. Exiting...'
-                // );
+            const selectedProject = await vscode.window.showQuickPick(
+                projects.map((p) => ({
+                    label: p.name,
+                    project: p,
+                })),
+                { placeHolder: 'Select an NX project...' }
+            );
+
+            if (!selectedProject) {
                 return;
             }
 
             const selectedTarget = await vscode.window.showQuickPick(
-                readNxProjectTargets(nxRootDir, selectedNxProject),
-                { placeHolder: `Reading targets for ${selectedNxProject}...` }
+                readNxProjectTargets(selectedProject.project.projectJsonPath),
+                { placeHolder: `Reading targets for ${selectedProject.project.name}...` }
             );
 
             if (!selectedTarget) {
-                // vscode.window.showInformationMessage(
-                //     'You did not select an nx project target. Exiting...'
-                // );
                 return;
             }
 
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (activeTerminal) {
                 activeTerminal.show();
                 activeTerminal.sendText(`cd "${nxRootDir}"`);
-                activeTerminal.sendText(`nx run ${selectedNxProject}:${selectedTarget}`);
+                activeTerminal.sendText(`nx run ${selectedProject.project.name}:${selectedTarget}`);
             } else {
                 vscode.window.showInformationMessage('No active terminal. Exiting...');
             }
