@@ -42,6 +42,34 @@ export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand(
         'elltg-nx-script-run.runNxScript',
         async () => {
+            // step 0:
+            //  Show a message stating that we are looking for nx projects.
+            //  Keep that message open until we have analysed the monorepo and presented a list.
+
+            // A vscode window can be kept open until a promise resolves.
+            // To utilise this, building a promise manually and assigning the resolve callback as dissmissLoadingMessage.
+            let dismissLoadingMessage: (_: unknown) => void = (_: unknown) => {
+                throw new Error(
+                    'dismissLoadingMessage was never re assigned?' +
+                        ' Expected to capture the resolve function of loadingPromise'
+                );
+            };
+            const loadingPromise = new Promise((resolve, reject) => {
+                dismissLoadingMessage = resolve;
+            });
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Looking for nx projects...',
+                    cancellable: false,
+                },
+                async (progress) => {
+                    // Automatically dismisses when this async function completes
+                    await loadingPromise;
+                }
+            );
+            // end of step 0
+
             const nxRootDir = await findNxRootDir();
 
             /**
@@ -56,6 +84,8 @@ export function activate(context: vscode.ExtensionContext) {
             } catch (err) {
                 vscode.window.showInformationMessage(`Failed to read nx projects. ${err}`);
                 return;
+            } finally {
+                dismissLoadingMessage!(undefined);
             }
 
             const selectedProject = await vscode.window.showQuickPick(
