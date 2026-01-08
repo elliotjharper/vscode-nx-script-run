@@ -11,7 +11,7 @@ When you have selected a project and a target, it will focus the last used termi
 NOTE: demo is from my other extension from which i forked. Need to create a new demo....
 
 _Demo:_
-<img src="https://raw.githubusercontent.com/elliotjharper/vscode-npm-script-run/main/images/demo.gif" alt="demo">
+<img src="https://raw.githubusercontent.com/elliotjharper/vscode-nx-script-run/main/images/demo.gif" alt="demo">
 
 ## Requirements
 
